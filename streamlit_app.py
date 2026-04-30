@@ -176,39 +176,148 @@ def money2(value):
 st.markdown(
     """
     <style>
-    .stApp { background: #edf1f3; color: #101820; }
-    .main .block-container { max-width: 1180px; padding-top: 2.4rem; }
-    [data-testid="stSidebar"] { background: #111a21; }
-    [data-testid="stSidebar"] * { color: #f5f7f8; }
-    h1, h2, h3, p, span, div { color: #101820; }
+    :root {
+        --vc-bg: #eef2f4;
+        --vc-panel: #ffffff;
+        --vc-ink: #101820;
+        --vc-muted: #69737c;
+        --vc-line: #d7dee4;
+        --vc-sidebar: #111a21;
+        --vc-sidebar-2: #18242e;
+        --vc-accent: #0d7c66;
+        --vc-red: #b3261e;
+        --vc-amber: #b86114;
+    }
+    .stApp { background: var(--vc-bg); color: var(--vc-ink); }
+    .main .block-container {
+        max-width: 1120px;
+        padding: 2.2rem 2.2rem 4rem;
+    }
+    h1, h2, h3, p, span, div { color: var(--vc-ink); }
+    div[data-testid="stMarkdownContainer"] > h3 {
+        font-size: 22px;
+        margin: 1.15rem 0 0.6rem;
+        letter-spacing: 0;
+    }
+    [data-testid="stSidebar"] {
+        background: var(--vc-sidebar);
+        border-right: 1px solid #27343f;
+    }
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3,
+    [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] span {
+        color: #f4f7f8 !important;
+    }
+    [data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
+        color: #9aa7b2 !important;
+    }
+    [data-testid="stSidebar"] input {
+        background: var(--vc-sidebar-2) !important;
+        color: #f4f7f8 !important;
+        -webkit-text-fill-color: #f4f7f8 !important;
+        border: 1px solid #33424e !important;
+    }
+    [data-testid="stSidebar"] button {
+        color: #f4f7f8 !important;
+        background: #22313c !important;
+        border-color: #33424e !important;
+    }
+    [data-testid="stSidebar"] [role="radiogroup"] label {
+        background: transparent !important;
+    }
+    [data-testid="stSidebar"] hr {
+        border-color: #283540;
+    }
+    .vc-brand {
+        margin-bottom: 1.2rem;
+    }
+    .vc-brand small {
+        display: block;
+        color: #d99b39;
+        font-size: 11px;
+        font-weight: 850;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+    }
+    .vc-brand strong {
+        display: block;
+        color: #f4f7f8;
+        font-size: 20px;
+        margin-top: 2px;
+    }
     [data-testid="stAlert"] {
         background: #fff6d6;
         border: 1px solid #ead28a;
         color: #4f3b00;
     }
     [data-testid="stAlert"] * { color: #4f3b00 !important; }
-    .vc-card {
-        background: white;
-        border: 1px solid #d8dee3;
-        border-radius: 8px;
-        padding: 18px;
-        min-height: 125px;
-        box-shadow: 0 10px 28px rgba(16, 24, 32, 0.06);
+    .vc-header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 24px;
+        align-items: end;
+        margin: 0 0 18px;
     }
-    .vc-card small { color: #69737c; font-weight: 800; text-transform: uppercase; }
-    .vc-card strong { display: block; font-size: 30px; margin: 8px 0 4px; }
-    .vc-card span { color: #101820; }
-    .profit { border-left: 5px solid #0d7c66; }
-    .loss { border-left: 5px solid #b3261e; }
+    .vc-kicker {
+        color: #65717b;
+        font-size: 12px;
+        font-weight: 850;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+    .vc-title {
+        color: var(--vc-ink);
+        font-size: 42px;
+        line-height: 1.02;
+        font-weight: 860;
+        letter-spacing: 0;
+        margin: 0;
+        max-width: 760px;
+    }
+    .vc-card {
+        background: var(--vc-panel);
+        border: 1px solid var(--vc-line);
+        border-radius: 8px;
+        padding: 16px;
+        min-height: 116px;
+        box-shadow: 0 8px 22px rgba(16, 24, 32, 0.045);
+    }
+    .vc-card small {
+        color: var(--vc-muted);
+        font-size: 12px;
+        font-weight: 850;
+        text-transform: uppercase;
+    }
+    .vc-card strong {
+        display: block;
+        color: var(--vc-ink);
+        font-size: 29px;
+        line-height: 1.05;
+        margin: 12px 0 7px;
+    }
+    .vc-card span { color: #2c3943; font-size: 15px; }
+    .profit { border-left: 4px solid var(--vc-accent); }
+    .loss { border-left: 4px solid var(--vc-red); }
     .source-pill {
         display: inline-block;
-        background: white;
-        border: 1px solid #d8dee3;
+        background: var(--vc-panel);
+        border: 1px solid var(--vc-line);
         border-radius: 999px;
-        padding: 7px 12px;
+        padding: 8px 12px;
         color: #33414c;
         font-size: 12px;
         font-weight: 800;
+        max-width: 360px;
+    }
+    .section-title {
+        color: var(--vc-ink);
+        font-size: 23px;
+        font-weight: 840;
+        margin: 18px 0 10px;
     }
     .route-grid {
         display: grid;
@@ -217,14 +326,15 @@ st.markdown(
         margin: 8px 0 24px;
     }
     .route-cell {
-        background: white;
-        border: 1px solid #d8dee3;
+        background: var(--vc-panel);
+        border: 1px solid var(--vc-line);
         border-radius: 8px;
-        padding: 14px 16px;
+        padding: 13px 15px;
     }
     .route-cell small {
         display: block;
-        color: #69737c;
+        color: var(--vc-muted);
+        font-size: 12px;
         font-weight: 800;
         text-transform: uppercase;
         margin-bottom: 4px;
@@ -234,8 +344,8 @@ st.markdown(
         font-size: 20px;
     }
     .mini-metric {
-        background: white;
-        border: 1px solid #d8dee3;
+        background: var(--vc-panel);
+        border: 1px solid var(--vc-line);
         border-radius: 8px;
         padding: 15px 16px;
         margin-bottom: 10px;
@@ -254,8 +364,8 @@ st.markdown(
     }
     .mini-metric span { color: #69737c; }
     .bridge-wrap {
-        background: white;
-        border: 1px solid #d8dee3;
+        background: var(--vc-panel);
+        border: 1px solid var(--vc-line);
         border-radius: 8px;
         padding: 16px;
         margin-top: 8px;
@@ -266,7 +376,7 @@ st.markdown(
         gap: 12px;
         align-items: center;
         min-height: 40px;
-        border-bottom: 1px solid #eef2f5;
+        border-bottom: 1px solid #edf1f3;
     }
     .bridge-row:last-child { border-bottom: 0; }
     .bridge-row span { color: #33414c; font-weight: 750; }
@@ -283,17 +393,24 @@ st.markdown(
         background: #1f8a70;
     }
     .bar-fill.cost { background: #c45a50; }
-    .news-item { border-bottom: 1px solid #d8dee3; padding: 10px 0; }
+    .news-item { border-bottom: 1px solid var(--vc-line); padding: 10px 0; }
     .news-item strong { display: block; }
-    .news-item span { color: #69737c; font-size: 13px; }
+    .news-item span { color: var(--vc-muted); font-size: 13px; }
+    @media (max-width: 900px) {
+        .vc-header { grid-template-columns: 1fr; }
+        .vc-title { font-size: 34px; }
+        .route-grid { grid-template-columns: 1fr; }
+    }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
 with st.sidebar:
-    st.markdown("## Voyage Commander")
-    st.caption("Oil operations portal")
+    st.markdown(
+        "<div class='vc-brand'><small>Oil operations portal</small><strong>Voyage Commander</strong></div>",
+        unsafe_allow_html=True,
+    )
     incoterm = st.radio("Contract terms", ["FOB", "CIF", "DDP"], horizontal=True)
     st.caption(INCOTERMS[incoterm]["note"])
 
@@ -333,11 +450,22 @@ net_profit = gross_margin - freight_cost - insurance_cost - demurrage_cost - fin
 margin_per_barrel = net_profit / barrels
 three_day_loss = demurrage * 3 + market_value * (sofr / 100 / 365) * 3
 
-st.markdown("### Commercial defense mechanism")
 top_left, top_right = st.columns([2.4, 1])
 with top_left:
-    st.title("Ras Tanura to Ningbo · VLCC crude voyage")
+    st.markdown(
+        """
+        <div class="vc-header">
+          <div>
+            <div class="vc-kicker">Commercial defense mechanism</div>
+            <h1 class="vc-title">Ras Tanura to Ningbo · VLCC crude voyage</h1>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 with top_right:
+    st.write("")
+    st.write("")
     st.markdown(f"<span class='source-pill'>Live: {source_label}</span>", unsafe_allow_html=True)
 
 metric_cols = st.columns(4)
@@ -357,7 +485,7 @@ for col, (label, value, caption, cls) in zip(metric_cols, cards):
 
 left, right = st.columns([1.45, 0.9])
 with left:
-    st.subheader("Voyage monitor")
+    st.markdown("<div class='section-title'>Voyage monitor</div>", unsafe_allow_html=True)
     eta_risk = "Red" if total_delay > 10 else "Amber" if total_delay > 3 else "Green"
     route_items = [
         ("Load port", "Ras Tanura"),
@@ -373,7 +501,7 @@ with left:
     )
     st.markdown(f"<div class='route-grid'>{route_html}</div>", unsafe_allow_html=True)
 
-    st.subheader("Margin bridge")
+    st.markdown("<div class='section-title'>Margin bridge</div>", unsafe_allow_html=True)
     bridge = {
         "Gross margin": gross_margin,
         "Freight": -freight_cost,
@@ -399,7 +527,7 @@ with left:
     st.markdown(f"<div class='bridge-wrap'>{''.join(bridge_rows)}</div>", unsafe_allow_html=True)
 
 with right:
-    st.subheader("Market marks")
+    st.markdown("<div class='section-title'>Market marks</div>", unsafe_allow_html=True)
     st.markdown(
         "".join(
             [
@@ -411,13 +539,13 @@ with right:
         unsafe_allow_html=True,
     )
 
-    st.subheader("Three more days stuck?")
+    st.markdown("<div class='section-title'>Three more days stuck?</div>", unsafe_allow_html=True)
     st.markdown(
         f"<div class='mini-metric'><small>Incremental impact</small><strong>{money(three_day_loss)}</strong><span>Berth delay, demurrage, and capital drag.</span></div>",
         unsafe_allow_html=True,
     )
 
-    st.subheader("Geopolitical sidebar")
+    st.markdown("<div class='section-title'>Geopolitical sidebar</div>", unsafe_allow_html=True)
     for item in news:
         st.markdown(
             f"<div class='news-item'><strong>{item['title']}</strong><span>{item['source']} · {item['description']}</span></div>",
