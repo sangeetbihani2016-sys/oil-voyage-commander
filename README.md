@@ -36,4 +36,4 @@ It uses `yf.Ticker().fast_info["last_price"]`, caches results for 300 seconds, w
 
 ## Route model
 
-`route_distances.py` contains a curated oil-operations port set and generates every directional port pair with Searoutes-style estimated nautical miles. The default Ras Tanura to Ningbo route estimates `6,183 nm`.
+`route_distances.py` contains a curated oil-operations port set and generates every directional port pair with Searoutes-style estimated nautical miles. The Streamlit app includes preset crude flows plus manual load/discharge selection across major Middle East, Asian, European, African, US Gulf, and Latin American oil ports.

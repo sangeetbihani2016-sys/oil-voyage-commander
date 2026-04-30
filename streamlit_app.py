@@ -8,7 +8,7 @@ from urllib.request import urlopen
 import streamlit as st
 
 from market_data import fetch_live_crude_prices
-from route_distances import estimate_distance_nm
+from route_distances import PORTS, estimate_distance_nm
 
 
 st.set_page_config(
@@ -50,6 +50,25 @@ INCOTERMS = {
         "note": "DDP exposure: full landed-delivery economics, including local duties converted back to USD.",
         "costs": {"freight", "insurance", "discharge", "finance", "duties", "inland"},
     },
+}
+
+ROUTE_PRESETS = {
+    "Arab Gulf to China: Ras Tanura → Ningbo": ("Ras Tanura", "Ningbo"),
+    "Iraq to China: Basrah Oil Terminal → Qingdao": ("Basrah Oil Terminal", "Qingdao"),
+    "Kuwait to Korea: Mina Al Ahmadi → Ulsan": ("Mina Al Ahmadi", "Ulsan"),
+    "Iran to India: Kharg Island → Jamnagar": ("Kharg Island", "Jamnagar"),
+    "UAE storage to Singapore: Fujairah → Singapore": ("Fujairah", "Singapore"),
+    "Saudi Red Sea to Europe: Yanbu → Rotterdam": ("Yanbu", "Rotterdam"),
+    "US Gulf to Europe: Corpus Christi → Rotterdam": ("Corpus Christi", "Rotterdam"),
+    "US Gulf to Asia: Houston → Ningbo": ("Houston", "Ningbo"),
+    "West Africa to Europe: Bonny → Rotterdam": ("Bonny", "Rotterdam"),
+    "Angola to China: Luanda → Zhoushan": ("Luanda", "Zhoushan"),
+    "Mediterranean to Italy: Ceyhan → Trieste": ("Ceyhan", "Trieste"),
+    "Black Sea to Med: Novorossiysk → Augusta": ("Novorossiysk", "Augusta"),
+    "North Sea/Baltic to ARA: Primorsk → Rotterdam": ("Primorsk", "Rotterdam"),
+    "Brazil to China: Sao Sebastiao → Dalian": ("Sao Sebastiao", "Dalian"),
+    "Venezuela to US Gulf: Jose Terminal → LOOP": ("Jose Terminal", "LOOP"),
+    "Manual selection": (None, None),
 }
 
 
@@ -224,6 +243,15 @@ st.markdown(
         color: #f4f7f8 !important;
         background: #22313c !important;
         border-color: #33424e !important;
+    }
+    [data-testid="stSidebar"] div[data-baseweb="select"] > div {
+        background: var(--vc-sidebar-2) !important;
+        border: 1px solid #33424e !important;
+    }
+    [data-testid="stSidebar"] div[data-baseweb="select"] span,
+    [data-testid="stSidebar"] div[data-baseweb="select"] svg {
+        color: #f4f7f8 !important;
+        fill: #f4f7f8 !important;
     }
     [data-testid="stSidebar"] [role="radiogroup"] label {
         background: transparent !important;
@@ -415,6 +443,25 @@ with st.sidebar:
     st.caption(INCOTERMS[incoterm]["note"])
 
     st.divider()
+    preset = st.selectbox("Voyage route", list(ROUTE_PRESETS.keys()))
+    preset_origin, preset_destination = ROUTE_PRESETS[preset]
+    port_names = list(PORTS.keys())
+
+    if preset_origin:
+        origin = preset_origin
+        destination = preset_destination
+        st.caption(f"{origin} → {destination}")
+    else:
+        origin = st.selectbox("Load port", port_names, index=port_names.index("Ras Tanura"))
+        destination_options = [port for port in port_names if port != origin]
+        default_destination = "Ningbo" if "Ningbo" in destination_options else destination_options[0]
+        destination = st.selectbox(
+            "Discharge port",
+            destination_options,
+            index=destination_options.index(default_destination),
+        )
+
+    st.divider()
     barrels = st.number_input("Cargo barrels", min_value=100_000, step=50_000, value=1_000_000)
     purchase = st.number_input("Purchase price / bbl", min_value=1.0, step=0.25, value=73.40)
     freight = st.number_input("Freight cost / bbl", min_value=0.0, step=0.05, value=2.80)
@@ -429,7 +476,7 @@ prices = fetch_live_crude_prices()
 sofr, sofr_source = fetch_sofr()
 fx, fx_source = fetch_fx()
 news = fetch_news()
-distance_nm = estimate_distance_nm("Ras Tanura", "Ningbo")
+distance_nm = estimate_distance_nm(origin, destination)
 source_label = " · ".join(["yfinance fast_info", "offline route model", sofr_source, fx_source])
 
 speed_knots = 14.5
@@ -452,12 +499,13 @@ three_day_loss = demurrage * 3 + market_value * (sofr / 100 / 365) * 3
 
 top_left, top_right = st.columns([2.4, 1])
 with top_left:
+    route_title = f"{escape(origin)} to {escape(destination)} · VLCC crude voyage"
     st.markdown(
-        """
+        f"""
         <div class="vc-header">
           <div>
             <div class="vc-kicker">Commercial defense mechanism</div>
-            <h1 class="vc-title">Ras Tanura to Ningbo · VLCC crude voyage</h1>
+            <h1 class="vc-title">{route_title}</h1>
           </div>
         </div>
         """,
@@ -488,12 +536,14 @@ with left:
     st.markdown("<div class='section-title'>Voyage monitor</div>", unsafe_allow_html=True)
     eta_risk = "Red" if total_delay > 10 else "Amber" if total_delay > 3 else "Green"
     route_items = [
-        ("Load port", "Ras Tanura"),
-        ("Discharge port", "Ningbo"),
+        ("Load port", origin),
+        ("Discharge port", destination),
         ("Nautical miles", f"{distance_nm:,} nm"),
         ("Days on water", f"{water_days:.1f}"),
         ("ETA risk", eta_risk),
         ("Contract term", incoterm),
+        ("Load region", f"{PORTS[origin]['country']} · {PORTS[origin]['role']}"),
+        ("Discharge region", f"{PORTS[destination]['country']} · {PORTS[destination]['role']}"),
     ]
     route_html = "".join(
         f"<div class='route-cell'><small>{escape(label)}</small><strong>{escape(value)}</strong></div>"
