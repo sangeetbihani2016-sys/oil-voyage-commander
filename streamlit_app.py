@@ -1,6 +1,7 @@
 import json
 import os
 import ssl
+from html import escape
 from urllib.parse import urlencode
 from urllib.request import urlopen
 
@@ -176,8 +177,16 @@ st.markdown(
     """
     <style>
     .stApp { background: #edf1f3; color: #101820; }
+    .main .block-container { max-width: 1180px; padding-top: 2.4rem; }
     [data-testid="stSidebar"] { background: #111a21; }
     [data-testid="stSidebar"] * { color: #f5f7f8; }
+    h1, h2, h3, p, span, div { color: #101820; }
+    [data-testid="stAlert"] {
+        background: #fff6d6;
+        border: 1px solid #ead28a;
+        color: #4f3b00;
+    }
+    [data-testid="stAlert"] * { color: #4f3b00 !important; }
     .vc-card {
         background: white;
         border: 1px solid #d8dee3;
@@ -188,6 +197,7 @@ st.markdown(
     }
     .vc-card small { color: #69737c; font-weight: 800; text-transform: uppercase; }
     .vc-card strong { display: block; font-size: 30px; margin: 8px 0 4px; }
+    .vc-card span { color: #101820; }
     .profit { border-left: 5px solid #0d7c66; }
     .loss { border-left: 5px solid #b3261e; }
     .source-pill {
@@ -200,6 +210,79 @@ st.markdown(
         font-size: 12px;
         font-weight: 800;
     }
+    .route-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin: 8px 0 24px;
+    }
+    .route-cell {
+        background: white;
+        border: 1px solid #d8dee3;
+        border-radius: 8px;
+        padding: 14px 16px;
+    }
+    .route-cell small {
+        display: block;
+        color: #69737c;
+        font-weight: 800;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+    .route-cell strong {
+        color: #101820;
+        font-size: 20px;
+    }
+    .mini-metric {
+        background: white;
+        border: 1px solid #d8dee3;
+        border-radius: 8px;
+        padding: 15px 16px;
+        margin-bottom: 10px;
+    }
+    .mini-metric small {
+        display: block;
+        color: #69737c;
+        font-weight: 800;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+    .mini-metric strong {
+        display: block;
+        color: #101820;
+        font-size: 26px;
+    }
+    .mini-metric span { color: #69737c; }
+    .bridge-wrap {
+        background: white;
+        border: 1px solid #d8dee3;
+        border-radius: 8px;
+        padding: 16px;
+        margin-top: 8px;
+    }
+    .bridge-row {
+        display: grid;
+        grid-template-columns: 118px 1fr 112px;
+        gap: 12px;
+        align-items: center;
+        min-height: 40px;
+        border-bottom: 1px solid #eef2f5;
+    }
+    .bridge-row:last-child { border-bottom: 0; }
+    .bridge-row span { color: #33414c; font-weight: 750; }
+    .bridge-row strong { color: #101820; text-align: right; }
+    .bar-track {
+        height: 10px;
+        background: #e8edf1;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+    .bar-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: #1f8a70;
+    }
+    .bar-fill.cost { background: #c45a50; }
     .news-item { border-bottom: 1px solid #d8dee3; padding: 10px 0; }
     .news-item strong { display: block; }
     .news-item span { color: #69737c; font-size: 13px; }
@@ -275,14 +358,20 @@ for col, (label, value, caption, cls) in zip(metric_cols, cards):
 left, right = st.columns([1.45, 0.9])
 with left:
     st.subheader("Voyage monitor")
-    route = {
-        "Load port": "Ras Tanura",
-        "Discharge port": "Ningbo",
-        "Nautical miles": f"{distance_nm:,} nm",
-        "Days on water": f"{water_days:.1f}",
-        "ETA risk": "Red" if total_delay > 10 else "Amber" if total_delay > 3 else "Green",
-    }
-    st.table(route)
+    eta_risk = "Red" if total_delay > 10 else "Amber" if total_delay > 3 else "Green"
+    route_items = [
+        ("Load port", "Ras Tanura"),
+        ("Discharge port", "Ningbo"),
+        ("Nautical miles", f"{distance_nm:,} nm"),
+        ("Days on water", f"{water_days:.1f}"),
+        ("ETA risk", eta_risk),
+        ("Contract term", incoterm),
+    ]
+    route_html = "".join(
+        f"<div class='route-cell'><small>{escape(label)}</small><strong>{escape(value)}</strong></div>"
+        for label, value in route_items
+    )
+    st.markdown(f"<div class='route-grid'>{route_html}</div>", unsafe_allow_html=True)
 
     st.subheader("Margin bridge")
     bridge = {
@@ -294,17 +383,39 @@ with left:
         "Duties": -duties_cost,
         "Inland": -inland_cost,
     }
-    st.bar_chart({k: v for k, v in bridge.items() if abs(v) > 1})
+    visible_bridge = {label: value for label, value in bridge.items() if abs(value) > 1}
+    max_bridge = max([abs(value) for value in visible_bridge.values()] or [1])
+    bridge_rows = []
+    for label, value in visible_bridge.items():
+        width = max(3, abs(value) / max_bridge * 100)
+        cost_class = "cost" if value < 0 else ""
+        bridge_rows.append(
+            "<div class='bridge-row'>"
+            f"<span>{escape(label)}</span>"
+            f"<div class='bar-track'><div class='bar-fill {cost_class}' style='width:{width:.1f}%'></div></div>"
+            f"<strong>{money(value)}</strong>"
+            "</div>"
+        )
+    st.markdown(f"<div class='bridge-wrap'>{''.join(bridge_rows)}</div>", unsafe_allow_html=True)
 
 with right:
     st.subheader("Market marks")
-    st.metric("Brent BZ=F", money2(prices["brent"]))
-    st.metric("WTI CL=F", money2(prices["wti"]))
-    st.metric("USD/CNY", f"{fx:.4f}")
+    st.markdown(
+        "".join(
+            [
+                f"<div class='mini-metric'><small>Brent BZ=F</small><strong>{money2(prices['brent'])}</strong><span>Front-month futures mark</span></div>",
+                f"<div class='mini-metric'><small>WTI CL=F</small><strong>{money2(prices['wti'])}</strong><span>Front-month futures mark</span></div>",
+                f"<div class='mini-metric'><small>USD/CNY</small><strong>{fx:.4f}</strong><span>FX for landed-cost translation</span></div>",
+            ]
+        ),
+        unsafe_allow_html=True,
+    )
 
     st.subheader("Three more days stuck?")
-    st.metric("Incremental impact", money(three_day_loss))
-    st.caption("Berth delay, demurrage, and capital drag.")
+    st.markdown(
+        f"<div class='mini-metric'><small>Incremental impact</small><strong>{money(three_day_loss)}</strong><span>Berth delay, demurrage, and capital drag.</span></div>",
+        unsafe_allow_html=True,
+    )
 
     st.subheader("Geopolitical sidebar")
     for item in news:
