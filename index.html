@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voyage Commander | Oil Operations Portal</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-block">
+          <div class="mark">VC</div>
+          <div>
+            <p class="eyebrow">Oil Operations Portal</p>
+            <h1>Voyage Commander</h1>
+          </div>
+        </div>
+
+        <section class="control-group">
+          <div class="section-title">
+            <span>Contract Terms</span>
+            <small>Risk routing</small>
+          </div>
+          <div class="segmented" role="group" aria-label="Incoterm selector">
+            <button class="segment active" data-incoterm="FOB">FOB</button>
+            <button class="segment" data-incoterm="CIF">CIF</button>
+            <button class="segment" data-incoterm="DDP">DDP</button>
+          </div>
+          <p class="contract-note" id="incotermNote"></p>
+        </section>
+
+        <section class="control-group">
+          <div class="section-title">
+            <span>Voyage Inputs</span>
+            <small>Base case</small>
+          </div>
+          <label>
+            Cargo barrels
+            <input id="barrelsInput" type="number" min="100000" step="50000" value="1000000" />
+          </label>
+          <label>
+            Purchase price / bbl
+            <input id="purchaseInput" type="number" min="1" step="0.25" value="73.40" />
+          </label>
+          <label>
+            Freight cost / bbl
+            <input id="freightInput" type="number" min="0" step="0.05" value="2.80" />
+          </label>
+          <label>
+            Insurance cost / bbl
+            <input id="insuranceInput" type="number" min="0" step="0.01" value="0.34" />
+          </label>
+        </section>
+
+        <section class="control-group">
+          <div class="section-title">
+            <span>Operational Delays</span>
+            <small>Penalty engine</small>
+          </div>
+          <label class="range-label">
+            Waiting for berth
+            <output id="berthDelayOut">5 days</output>
+          </label>
+          <input id="berthDelay" type="range" min="0" max="20" value="5" />
+
+          <label class="range-label">
+            Canal / weather delay
+            <output id="canalDelayOut">2 days</output>
+          </label>
+          <input id="canalDelay" type="range" min="0" max="20" value="2" />
+
+          <label>
+            Demurrage rate / day
+            <input id="demurrageInput" type="number" min="0" step="1000" value="45000" />
+          </label>
+        </section>
+      </aside>
+
+      <section class="main-stage">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Commercial defense mechanism</p>
+            <h2>Ras Tanura to Ningbo · VLCC crude voyage</h2>
+          </div>
+          <div class="status-pill" id="dataStatus">Loading market tape</div>
+        </header>
+
+        <section class="metric-strip">
+          <article class="metric north-star" id="profitCard">
+            <span>Live net profit</span>
+            <strong id="netProfit">$0</strong>
+            <small id="marginPerBarrel">$0.00 / bbl</small>
+          </article>
+          <article class="metric">
+            <span>Market value</span>
+            <strong id="marketValue">$0</strong>
+            <small id="marketPrice">Brent $0.00</small>
+          </article>
+          <article class="metric">
+            <span>Delay bleed</span>
+            <strong id="delayBleed">$0</strong>
+            <small id="delayDays">0 exposure days</small>
+          </article>
+          <article class="metric">
+            <span>SOFR financing</span>
+            <strong id="financeCost">$0</strong>
+            <small id="sofrRate">SOFR 0.00%</small>
+          </article>
+        </section>
+
+        <section class="workspace-grid">
+          <article class="voyage-map panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Physical flow</p>
+                <h3>Voyage monitor</h3>
+              </div>
+              <div class="eta-box">
+                <span>ETA risk</span>
+                <strong id="etaRisk">Amber</strong>
+              </div>
+            </div>
+            <canvas id="routeCanvas" width="980" height="420" aria-label="Voyage route canvas"></canvas>
+            <div class="port-row">
+              <div>
+                <span>Load port</span>
+                <strong>Ras Tanura</strong>
+              </div>
+              <div>
+                <span>Nautical miles</span>
+                <strong id="distanceNm">6,355 nm</strong>
+              </div>
+              <div>
+                <span>Days on water</span>
+                <strong id="waterDays">18.2 days</strong>
+              </div>
+              <div>
+                <span>Discharge port</span>
+                <strong>Ningbo</strong>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Cost stack</p>
+                <h3>Margin bridge</h3>
+              </div>
+              <button class="icon-button" id="refreshButton" title="Refresh market data">↻</button>
+            </div>
+            <div class="bridge" id="bridge"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Exposure</p>
+                <h3>Cost routing by incoterm</h3>
+              </div>
+              <span class="chip" id="activeIncoterm">FOB</span>
+            </div>
+            <div class="routing-grid" id="routingGrid"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Desk question</p>
+                <h3>Three more days stuck?</h3>
+              </div>
+            </div>
+            <div class="stress-card">
+              <strong id="threeDayLoss">$0</strong>
+              <span>incremental P&L impact from berth delay, demurrage, and capital drag.</span>
+            </div>
+            <div class="decision-list">
+              <div><span></span>Escalate port agent when margin at risk exceeds $500k.</div>
+              <div><span></span>Re-cut discharge plan if DDP duties move against USD.</div>
+              <div><span></span>Alert trader when net margin turns negative.</div>
+            </div>
+          </article>
+        </section>
+      </section>
+
+      <aside class="intel">
+        <section class="panel market-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Live tape</p>
+              <h3>Market marks</h3>
+            </div>
+          </div>
+          <div class="quote-list">
+            <div><span>Brent BZ=F</span><strong id="brentQuote">$0.00</strong></div>
+            <div><span>WTI CL=F</span><strong id="wtiQuote">$0.00</strong></div>
+            <div><span>USD/CNY</span><strong id="fxQuote">7.18</strong></div>
+          </div>
+        </section>
+
+        <section class="panel news-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Context</p>
+              <h3>Geopolitical sidebar</h3>
+            </div>
+          </div>
+          <div id="newsFeed" class="news-feed"></div>
+        </section>
+
+        <section class="panel api-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Data stack</p>
+              <h3>Source health</h3>
+            </div>
+          </div>
+          <ul>
+            <li>Market: Yahoo/yfinance compatible proxy</li>
+            <li>Capital: FRED SOFR endpoint</li>
+            <li>News: NewsAPI keyword filter</li>
+            <li>Route: Searoutes distance fallback</li>
+            <li>FX: ExchangeRate-API fallback</li>
+          </ul>
+        </section>
+      </aside>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
