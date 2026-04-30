@@ -248,10 +248,16 @@ st.markdown(
         background: var(--vc-sidebar-2) !important;
         border: 1px solid #33424e !important;
     }
+    [data-testid="stSidebar"] div[data-baseweb="select"] * {
+        color: #f4f7f8 !important;
+        -webkit-text-fill-color: #f4f7f8 !important;
+    }
     [data-testid="stSidebar"] div[data-baseweb="select"] span,
-    [data-testid="stSidebar"] div[data-baseweb="select"] svg {
+    [data-testid="stSidebar"] div[data-baseweb="select"] svg,
+    [data-testid="stSidebar"] div[data-baseweb="select"] input {
         color: #f4f7f8 !important;
         fill: #f4f7f8 !important;
+        caret-color: #f4f7f8 !important;
     }
     [data-testid="stSidebar"] [role="radiogroup"] label {
         background: transparent !important;
